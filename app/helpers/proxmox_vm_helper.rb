@@ -42,6 +42,22 @@ module ProxmoxVMHelper
     ).merge(type: type)
   end
 
+  def create_vm_from_image(image_id, vmid, args, type)
+    image = find_vm_by_uuid(image_id)
+    validate_image_template_disk_slots!(image, args) if type == 'qemu'
+    is_full_clone = full_clone?(args)
+    vm = clone_from_image(image, vmid, full_clone: is_full_clone)
+    vm.full_clone = is_full_clone ? '1' : '0'
+    cloudinit_args = cloudinit_clone_args(args, vm)
+    vm.update(compute_clone_attributes(cloudinit_args, vm.container?, type, image: image))
+    update_pool(vm, args[:pool]) if args[:pool]
+    vm
+  end
+
+  def full_clone?(args)
+    Foreman::Cast.to_bool(args[:full_clone])
+  end
+
   def update_boot_order(instance, exclude_cdrom: false, include_network: false)
     return {} unless instance
 
