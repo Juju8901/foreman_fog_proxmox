@@ -373,6 +373,7 @@ const ProxmoxVmType = ({
               imagesMap={imagesMap}
               handleChange={handleChange}
               untemplatable={untemplatable}
+              provisionMethodState={provisionMethodState}
             />
           </Tab>
 
